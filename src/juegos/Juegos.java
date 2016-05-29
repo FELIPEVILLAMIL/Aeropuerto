@@ -33,6 +33,8 @@ public class Juegos extends Canvas implements KeyListener,ActionListener{
     private BufferStrategy strategy;
     private Entity player;
     private Image sprite;
+    private Image fanta;
+    
     private ArrayList<Esfera> esfera;
     	private boolean left;
 	/** True if the right key is currently pressed */
@@ -41,9 +43,12 @@ public class Juegos extends Canvas implements KeyListener,ActionListener{
 	private boolean up;
 	/** True if the down key is currently pressed */
 	private boolean down;
+        private Fantasma fantasma;
 
     public Juegos() throws FileNotFoundException{
         sprite = loadImage("sprite.gif");
+        fanta= loadImage("ghost.gif");
+        fanta= fanta.getScaledInstance(20,20,0);
         JFrame frame=new JFrame();
         frame.setSize(800,750);
         frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -55,13 +60,14 @@ public class Juegos extends Canvas implements KeyListener,ActionListener{
         frame.addKeyListener(this);
 		addKeyListener(this);
         tablero=new TableroNivel1();
+        fantasma=new Fantasma(100,100,fanta,tablero,3);
         player= new Entity(sprite, tablero, 1.5f, 1.5f);
         this.esfera=new ArrayList<Esfera>();
         //this.esfera.add(new Esfera(300,500));
         this.esfera.add(new Esfera(20,50));
         this.timer = new Timer(100,this);
          this.timer.start();
-        createBufferStrategy(2);
+        createBufferStrategy(3);
         strategy = getBufferStrategy();
         gameLoop();
     }
@@ -83,8 +89,9 @@ public class Juegos extends Canvas implements KeyListener,ActionListener{
                         
 			tablero.paint(g, (int)(player.x), (int)(player.y));
                         player.paint(g);
+                        fantasma.dibujar(g);
                         
-                        if (esfera!=null){
+                       if (esfera!=null){
                              for(Esfera esfera:esfera)
                              esfera.dibujar(g,this);
                             
@@ -160,6 +167,8 @@ public class Juegos extends Canvas implements KeyListener,ActionListener{
 		if ((dx != 0) || (dy != 0)) {
 			player.move(dx * delta * 0.003f,
 						dy * delta * 0.003f);
+                        
+                
 		}
 	}
 	
@@ -169,9 +178,7 @@ public class Juegos extends Canvas implements KeyListener,ActionListener{
 	public void keyTyped(KeyEvent e) {
 	}
 
-	/**
-	 * @see java.awt.event.KeyListener#keyPressed(java.awt.event.KeyEvent)
-	 */
+	
 	public void keyPressed(KeyEvent e) {
 		// check the keyboard and record which keys are pressed
 		if (e.getKeyCode() == KeyEvent.VK_LEFT) {
@@ -207,12 +214,8 @@ public class Juegos extends Canvas implements KeyListener,ActionListener{
 		}
 	}
 	
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) throws FileNotFoundException {
-        new Juegos();
-    }
+    
+    
 
     protected Image loadImage(String imageName) {
              ImageIcon ii = new ImageIcon(imageName);
@@ -222,15 +225,19 @@ public class Juegos extends Canvas implements KeyListener,ActionListener{
    
     public boolean validarColisiones(){
                 Rectangle recPersonaje=this.player.obRectangle();
+                Rectangle recFantasma=this.fantasma.obRectangle();
                 for (Esfera esfera: esfera){
                 Rectangle RecEsfera=esfera.obRectangle();
                 ArrayList<Esfera> copia=(ArrayList<Esfera>)this.esfera.clone();
                     if(recPersonaje.intersects(RecEsfera)){
-                        System.out.println("Colision");
+                        
                         copia.remove(esfera);
                         return true;
                     }
                     this.esfera=copia;
+                }
+                if(recPersonaje.intersects(recFantasma)){
+                    return true;
                 }
                 return false;
 }
@@ -238,6 +245,7 @@ public class Juegos extends Canvas implements KeyListener,ActionListener{
     @Override
     public void actionPerformed(ActionEvent e) {
         validarColisiones();
+            fantasma.move();
          for(Esfera esfera: this.esfera)
             esfera.mover();
             repaint();

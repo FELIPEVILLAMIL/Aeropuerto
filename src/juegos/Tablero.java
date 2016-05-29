@@ -58,10 +58,7 @@ public class Tablero  {
 		// look up the right cell (based on simply rounding the floating
 		// values) and check the value
 		return tableroMatriz[(int) x][(int) y] == BLOCKED;
-	}
-
-    
-
-        
+	}   
        
 }
+
